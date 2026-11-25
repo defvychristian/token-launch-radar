@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar — pre-token protocols ranked by implied value</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="mark" aria-hidden="true">&#9679;</span>
+    <div>
+      <h1>Token Radar</h1>
+      <p class="sub">Pre-token protocols, ranked by what a launch would be worth</p>
+    </div>
+  </div>
+  <dl class="stats" id="stats"></dl>
+</header>
+
+<nav class="tabs" aria-label="Views">
+  <button type="button" id="tab-board" class="tab active" aria-pressed="true">Board</button>
+  <button type="button" id="tab-live" class="tab" aria-pressed="false">Live tokens</button>
+  <button type="button" id="tab-how" class="tab" aria-pressed="false">How it scores</button>
+</nav>
+
+<section class="controls" id="controls" aria-label="Board controls">
+  <label class="field grow">Search
+    <input type="search" id="q" placeholder="Protocol, slug or category…" autocomplete="off">
+  </label>
+  <label class="field">Category
+    <select id="cat"><option value="">All categories</option></select>
+  </label>
+  <label class="field">Chain
+    <select id="chain"><option value="">All chains</option></select>
+  </label>
+  <label class="field">Rows
+    <select id="status">
+      <option value="">Whole board</option>
+      <option value="watchlist">Watchlist only</option>
+      <option value="early">Early finds only</option>
+    </select>
+  </label>
+  <label class="field">Sort by
+    <select id="sort">
+      <option value="value">Implied value</option>
+      <option value="tvl">TVL</option>
+      <option value="growth">7-day growth</option>
+      <option value="age">Age, oldest first</option>
+      <option value="name">Name A–Z</option>
+    </select>
+  </label>
+</section>
+
+<main id="board" tabindex="-1">
+  <p class="count" id="count" aria-live="polite"></p>
+  <div class="table-wrap">
+    <table id="grid">
+      <thead>
+        <tr>
+          <th class="num">#</th>
+          <th>Protocol</th>
+          <th>Category</th>
+          <th>Chains</th>
+          <th class="num">TVL</th>
+          <th class="num">7d</th>
+          <th class="num">Implied value</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <p class="note" id="board-note"></p>
+</main>
+
+<section id="live" hidden>
+  <p class="lede">These protocols already trade. The board never ranks them — it prices
+  the pre-token ones <em>against</em> them. Each row shows the market's own
+  multiple: market cap per dollar of TVL, the peer multiple the model uses.</p>
+  <div class="table-wrap">
+    <table id="live-grid">
+      <thead>
+        <tr>
+          <th>Protocol</th>
+          <th>Category</th>
+          <th>Chains</th>
+          <th class="num">TVL</th>
+          <th class="num">Market cap</th>
+          <th class="num">Mcap / TVL</th>
+          <th class="num">7d</th>
+        </tr>
+      </thead>
+      <tbody id="live-rows"></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="how" hidden>
+  <h2>How the value is scored</h2>
+  <p class="lede">The implied value is the entry's own claim, computed from the snapshot
+  alone. It does not predict whether or when a token is issued.</p>
+  <ol class="formula">
+    <li><strong>Peer multiple.</strong> For each category, the median market-cap /
+    TVL of the live-token protocols in that category (at least 3 peers, else the
+    whole market's median), clamped to 0.03–1.00.</li>
+    <li><strong>Base.</strong> TVL &times; peer multiple.</li>
+    <li><strong>Growth.</strong> The 7-day TVL change, clamped to &minus;60%…+120%,
+    moves the value by half its size: multiplier = 1 + growth &times; 0.5.</li>
+    <li><strong>Maturity.</strong> How long the protocol has run with no token:
+    0.6 + min(age, 1095 days) / 1095 &times; 0.4. Unknown age counts as 365 days.</li>
+    <li><strong>Implied value.</strong> Base &times; growth multiplier &times;
+    maturity multiplier. Rank 1 is the most valuable.</li>
+  </ol>
+  <p>The watchlist is the floor, never the ceiling: 40 protocols at or above
+  $50M TVL that record no token and are not a wrapped, staked or bridged
+  product of one that trades. The board adds every other rankable pre-token
+  protocol below the floor — the early finds. A protocol is called pre-token
+  because its record shows no token, never because it has none.</p>
+  <p class="src" id="src"></p>
+</section>
+
+<aside id="drawer" hidden aria-label="Protocol detail">
+  <button type="button" class="close" id="drawer-close" aria-label="Close detail">&times;</button>
+  <div id="detail"></div>
+</aside>
+
+<footer>
+  <p>Token Radar · model <span id="model-ver"></span> · snapshot <span id="asof"></span> ·
+  source: DefiLlama public API, fetched once and sealed. Not investment advice.</p>
+</footer>
+
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
